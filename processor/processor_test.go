@@ -3,7 +3,7 @@ package processor
 import (
 	a "awesomeProject1/csv"
 	"awesomeProject1/functions"
-	"developer.zopsmart.com/go/gofr/pkg/errors"
+	"errors"
 	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -35,7 +35,7 @@ func TestProcessor_Start(t *testing.T) {
 
 		{"error from Read", []*gomock.Call{
 			mockReader.EXPECT().ReadCSV().Return(a.JSON{"id": "1", "name": "abc", "age": "22", "phoneNumber": "aee864024cf886864065e090ebce3435ef13f06f",
-				"Signature": "1abc22aee864024cf886864065e090ebce3435ef13f06f"}, errors.Error("error in reading file"))}, errors.Error("error in reading file"),
+				"Signature": "1abc22aee864024cf886864065e090ebce3435ef13f06f"}, errors.New("error in reading file"))}, errors.New("error in reading file"),
 		},
 	}
 
@@ -59,7 +59,7 @@ func TestWriteToCSV(t *testing.T) {
 		{"success case", a.JSON{"id": "1", "name": "abc", "age": "22", "phoneNumber": "90924239139"}, nil, []*gomock.Call{
 			mockWriter.EXPECT().WriteCSV(a.JSON{"id": "1", "name": "abc", "age": "22", "phoneNumber": "90924239139"}).Return(nil).AnyTimes(),
 		}},
-		{"error case", a.JSON{"id": "1", "name": "abc", "age": "22", "phoneNumber": "90924239139"}, errors.Error("some error"), nil},
+		{"error case", a.JSON{"id": "1", "name": "abc", "age": "22", "phoneNumber": "90924239139"}, errors.New("some error"), nil},
 	}
 	for _, tc := range tests {
 		t.Run(tc.desc, func(t *testing.T) {
