@@ -44,19 +44,16 @@ func (p Processor) Start() error {
 	}
 
 	wg := sync.WaitGroup{}
-
+	wg.Add(1)
 	// writing data to output file
-	go func(wg *sync.WaitGroup) error {
+	e := p.Write(dataChannel[len(dataChannel)-1])
+	go func(wg *sync.WaitGroup) {
 		defer wg.Done()
-
-		for v := range dataChannel[len(dataChannel)-1] {
-			err := p.w.WriteCSV(v)
-			if err != nil {
-				return err
-				p.lg.Fatal(err)
+		for v := range e {
+			if v != nil {
+				p.lg.Fatal(v)
 			}
 		}
-		return nil
 	}(&wg)
 
 	for {
@@ -71,8 +68,19 @@ func (p Processor) Start() error {
 
 	close(dataChannel[0])
 
-	wg.Add(1)
 	wg.Wait()
 
 	return nil
+}
+
+func (p Processor) Write(dataChannel <-chan a.JSON) <-chan error {
+	err := make(chan error)
+	go func() {
+		defer close(err)
+		for v := range dataChannel {
+			err <- p.w.WriteCSV(v)
+		}
+	}()
+
+	return err
 }
